@@ -68,7 +68,6 @@ DB_T = {
         'USER': 'admin',
         'PASSWORD': 'parol',
         'ATOMIC': True,
-        'AUTOCOMMIT': True
     }
 }
 
