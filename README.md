@@ -12,7 +12,7 @@ pip install git+https://github.com/artembo/tarantool-python@dbapi2
 
 ### Limitations:
 
-- altering tables not supported (need to squash existed migrations or remove it and make again)
-- transactions is not supported (only atomic)
+- altering tables is not supported (need to squash existed migrations or remove it and make again)
+- transactions are not supported (only atomic)
 
 
