@@ -1,0 +1,13 @@
+venv
+tarantool_db
+sqlite.db
+django_app/sqlite.db
+.pytest_cache
+*.pyc
+tarantool
+*.log
+.idea
+/django_tarantool.egg-info/
+/build/
+/dist/
+/_tarantool/
