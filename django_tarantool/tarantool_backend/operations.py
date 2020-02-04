@@ -1,11 +1,10 @@
+from _django.utils.datetime_safe import datetime
 from django.db.backends.base.operations import BaseDatabaseOperations
 
 
 class DatabaseOperations(BaseDatabaseOperations):
 
     def quote_name(self, name):
-        if name in ("True", "False"):
-            return name  # Quoting once is enough.
         return '"%s"' % name
 
     def get_db_converters(self, expression):
@@ -21,10 +20,10 @@ class DatabaseOperations(BaseDatabaseOperations):
         return value
 
     def convert_datetimefield_value(self, value, expression, connection):
-        # if value is not None:
+        if value not in (None, 'None'):
+            value = datetime.fromisoformat(value)
         #     if settings.USE_TZ:
         #         value = timezone.make_aware(value, self.connection.timezone)
-        # print(value)
         return value
 
     def bulk_insert_sql(self, fields, placeholder_rows):

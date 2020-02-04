@@ -10,6 +10,11 @@ Now it is hosted at https://github.com/artembo/tarantool-python/tree/dbapi2
 pip install git+https://github.com/artembo/tarantool-python@dbapi2 
 ```
 
+To set up django-tarantool enter in the command line 
+```shell script
+pip install django-tarantool
+```
+
 Add ``DATABASES`` config of your Tarantool into ``settings.py``
 ```python
 DATABASES = {
@@ -23,7 +28,6 @@ DATABASES = {
     }
 }
 ```
-
 
 ### Limitations:
 
