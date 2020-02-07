@@ -20,7 +20,9 @@ class DatabaseOperations(BaseDatabaseOperations):
         return value
 
     def convert_datetimefield_value(self, value, expression, connection):
-        if value not in (None, 'None'):
+        if value in (None, 'None'):
+            return None
+        else:
             value = datetime.fromisoformat(value)
         #     if settings.USE_TZ:
         #         value = timezone.make_aware(value, self.connection.timezone)

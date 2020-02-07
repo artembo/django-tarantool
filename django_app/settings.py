@@ -67,7 +67,6 @@ DB_T = {
         'PORT': '3301',
         'USER': 'admin',
         'PASSWORD': 'parol',
-        'ATOMIC': True,
     }
 }
 
@@ -75,7 +74,6 @@ DB_S = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': 'sqlite.db',
-        # 'AUTOCOMMIT': True
     }
 }
 
@@ -130,4 +128,4 @@ LOGGING_TO_FILE = {
     },
 }
 
-LOGGING = LOGGING_TO_FILE
+# LOGGING = LOGGING_TO_FILE
