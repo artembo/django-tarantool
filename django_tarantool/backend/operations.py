@@ -1,4 +1,4 @@
-from _django.utils.datetime_safe import datetime
+from django.utils.datetime_safe import datetime
 from django.db.backends.base.operations import BaseDatabaseOperations
 
 
@@ -7,8 +7,11 @@ class DatabaseOperations(BaseDatabaseOperations):
     def quote_name(self, name):
         return '"%s"' % name
 
+    def pk_default_value(self):
+        return 'NULL'
+
     def get_db_converters(self, expression):
-        converters = super().get_db_converters(expression)
+        converters = []
         internal_type = expression.output_field.get_internal_type()
         if internal_type == 'DateTimeField':
             converters.append(self.convert_datetimefield_value)
@@ -22,12 +25,12 @@ class DatabaseOperations(BaseDatabaseOperations):
         return value
 
     def convert_datefield_value(self, value, expression, connection):
-        if value in (None, 'None'):
+        if value in (None, 'None', 0):
             return None
-        return datetime.fromordinal(int(value))
+        return datetime.fromtimestamp(int(value))
 
     def convert_datetimefield_value(self, value, expression, connection):
-        if value in (None, 'None'):
+        if value in (None, 'None', 0):
             return None
         else:
             value = datetime.fromtimestamp(int(value))
@@ -44,4 +47,4 @@ class DatabaseOperations(BaseDatabaseOperations):
         return value.timestamp() if value else 0
 
     def adapt_datefield_value(self, value):
-        return value.toordinal()
+        return datetime.fromordinal(value.toordinal()).timestamp() if value else 0

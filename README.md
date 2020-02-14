@@ -1,4 +1,4 @@
-# Django tarantool database backend
+# Django Tarantool database backend
 Very first version
 
 Installation
@@ -19,7 +19,7 @@ Add ``DATABASES`` config of your Tarantool into ``settings.py``
 ```python
 DATABASES = {
     'default': {
-        'ENGINE': 'django_tarantool.tarantool_backend',
+        'ENGINE': 'django_tarantool.backend',
         'HOST': '127.0.0.1',
         'PORT': '3301',
         'USER': 'admin',

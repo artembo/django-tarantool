@@ -62,7 +62,7 @@ WSGI_APPLICATION = 'wsgi.application'
 
 DB_T = {
     'default': {
-        'ENGINE': 'django_tarantool.tarantool_backend',
+        'ENGINE': 'django_tarantool.backend',
         'HOST': '127.0.0.1',
         'PORT': '3301',
         'USER': 'admin',
@@ -73,7 +73,7 @@ DB_T = {
 DB_S = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'sqlite.db',
+        'NAME': os.path.join(BASE_DIR, 'sqlite.db'),
     }
 }
 
