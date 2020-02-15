@@ -1,6 +1,6 @@
 from django.utils.datetime_safe import datetime
 from django.db.backends.base.operations import BaseDatabaseOperations
-
+from datetime import time
 
 class DatabaseOperations(BaseDatabaseOperations):
 
@@ -17,6 +17,8 @@ class DatabaseOperations(BaseDatabaseOperations):
             converters.append(self.convert_datetimefield_value)
         elif internal_type == 'DateField':
             converters.append(self.convert_datefield_value)
+        elif internal_type == 'TimeField':
+            converters.append(self.convert_timefield_value)
         elif internal_type in ('BooleanField', 'NullBooleanField'):
             converters.append(self.convert_booleanfield_value)
         return converters
@@ -25,18 +27,25 @@ class DatabaseOperations(BaseDatabaseOperations):
         return value
 
     def convert_datefield_value(self, value, expression, connection):
-        if value in (None, 'None', 0):
+        if value is None:
             return None
         return datetime.fromtimestamp(int(value))
 
     def convert_datetimefield_value(self, value, expression, connection):
-        if value in (None, 'None', 0):
+        if value is None:
             return None
-        else:
-            value = datetime.fromtimestamp(int(value))
+        value = datetime.fromtimestamp(int(value))
         #     if settings.USE_TZ:
         #         value = timezone.make_aware(value, self.connection.timezone)
         return value
+
+    def convert_timefield_value(self, value, expression, connection):
+        if value is None:
+            return None
+        hours = value // 3600
+        minutes = value % hours // 60
+        seconds = value % 60
+        return time(hours, minutes, seconds)
 
     def bulk_insert_sql(self, fields, placeholder_rows):
         placeholder_rows_sql = (", ".join(row) for row in placeholder_rows)
@@ -44,7 +53,10 @@ class DatabaseOperations(BaseDatabaseOperations):
         return "VALUES " + values_sql
 
     def adapt_datetimefield_value(self, value):
-        return value.timestamp() if value else 0
+        return value.timestamp() if value else None
 
     def adapt_datefield_value(self, value):
-        return datetime.fromordinal(value.toordinal()).timestamp() if value else 0
+        return datetime.fromordinal(value.toordinal()).timestamp() if value else None
+
+    def adapt_timefield_value(self, value):
+        return value.hour * 60 * 60 + value.minute * 60 + value.second if value else None
