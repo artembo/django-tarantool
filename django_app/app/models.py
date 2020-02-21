@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 
@@ -11,16 +12,14 @@ class NullBoolean(models.Model):
     def __str__(self): return str(self.null_boolean)
 
 
-class Binary(models.Model):
-    binary = models.BinaryField()
-
-
 class File(models.Model):
     file = models.FileField()
+    def __str__(self): return self.file.path if self.file else None
 
 
 class FilePath(models.Model):
-    filepath = models.FilePathField()
+    filepath = models.FilePathField(path=settings.BASE_DIR)
+    def __str__(self): return self.filepath
 
 
 class Float(models.Model):
@@ -33,27 +32,27 @@ class Decimal(models.Model):
     def __str__(self): return str(self.decimal)
 
 
-class Integer(models.Model):  # Manually tested
+class Integer(models.Model):
     integer = models.IntegerField()
     def __str__(self): return str(self.integer)
 
 
-class BigInteger(models.Model):  # Manually tested
+class BigInteger(models.Model):
     big_integer = models.BigIntegerField()
     def __str__(self): return str(self.big_integer)
 
 
-class PositiveInteger(models.Model):  # Manually tested
+class PositiveInteger(models.Model):
     positive_integer = models.PositiveIntegerField()
     def __str__(self): return str(self.positive_integer)
 
 
-class SmallInteger(models.Model):  # Manually tested
-    small_ineger = models.SmallIntegerField()
-    def __str__(self): return str(self.small_ineger)
+class SmallInteger(models.Model):
+    small_integer = models.SmallIntegerField()
+    def __str__(self): return str(self.small_integer)
 
 
-class PositiveSmallInteger(models.Model):  # Manually tested
+class PositiveSmallInteger(models.Model):
     positive_small_integer = models.PositiveSmallIntegerField()
     def __str__(self): return str(self.positive_small_integer)
 
@@ -64,6 +63,12 @@ class OneToOneRelative(models.Model):
 
 class OneToOne(models.Model):
     one_to_one = models.OneToOneField(OneToOneRelative, models.CASCADE, related_name='one')
+    def __str__(self): return str(self.pk)
+
+
+class ForeignKey(models.Model):
+    foreign_key = models.ForeignKey('app.Integer', on_delete=models.CASCADE)
+    def __str__(self): return str(self.pk)
 
 
 class GenericIPAddress(models.Model):
@@ -102,26 +107,28 @@ class Time(models.Model):
     def __str__(self): return str(self.time)
 
 
-class Duration(models.Model):
-    duration = models.DurationField()
+# class Duration(models.Model):
+#     duration = models.DurationField()
+#     def __str__(self): return str(self.duration)
+
+
+# class Binary(models.Model):
+#     binary = models.BinaryField()
 
 
 class AllModel(models.Model):
-
-    binary = models.BinaryField(null=True)
     boolean = models.BooleanField(default=True)
     char = models.CharField(max_length=1)
     decimal = models.DecimalField(max_digits=5, decimal_places=2)
-    duration = models.DurationField()
     file = models.FileField()
-    filepath = models.FilePathField()
+    filepath = models.FilePathField(path=settings.BASE_DIR)
     float = models.FloatField(null=True)
     integer = models.IntegerField(null=True)
     big_integer = models.BigIntegerField(null=True)
     generic_ip_address = models.GenericIPAddressField()
     null_boolean = models.NullBooleanField()
-    one_to_one = models.OneToOneField('self', models.CASCADE, related_name='all_model')
-    fk = models.OneToOneField('self', models.CASCADE, related_name='all_models')
+    one_to_one = models.OneToOneField('app.Integer', models.CASCADE, related_name='all_model')
+    fk = models.OneToOneField('app.Integer', models.CASCADE, related_name='all_models')
     positive_integer = models.PositiveIntegerField()
     positive_small_integer = models.PositiveSmallIntegerField()
     slug = models.SlugField()

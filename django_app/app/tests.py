@@ -1,14 +1,13 @@
-import random
-import string
 
 from django.test import TestCase
 
-# Create your tests here.
-from app.models import MyModel
+from app.models import Boolean
 
 
-def test_creation():
-    def generate_name():
-        return ''.join(random.choice(string.ascii_lowercase) for _ in range(10))
-    for _ in range(1000):
-        MyModel.objects.create(name=generate_name())
+class BooleanTests(TestCase):
+
+    def test_create_boolean(self):
+        true = Boolean.objects.create(boolean=True)
+        false = Boolean.objects.create(boolean=False)
+        self.assertEqual(true, True)
+        self.assertEqual(false, False)

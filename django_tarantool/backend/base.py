@@ -1,7 +1,5 @@
 """
 Tarantool database backend for Django.
-
-Requires python-tarantool: http://github.com/
 """
 
 
@@ -12,7 +10,6 @@ from django.db.backends.utils import (
 
 import tarantool.dbapi
 
-# Some of these import psycopg2, so import them after checking if it's installed.
 from .client import DatabaseClient                          # NOQA isort:skip
 from .creation import DatabaseCreation                      # NOQA isort:skip
 from .features import DatabaseFeatures                      # NOQA isort:skip
@@ -90,7 +87,6 @@ class DatabaseWrapper(BaseDatabaseWrapper):
 
     def get_connection_params(self):
         settings_dict = self.settings_dict
-        # None may be used to connect to the default 'postgres' db
 
         conn_params = {
             **settings_dict['OPTIONS'],
@@ -114,7 +110,7 @@ class DatabaseWrapper(BaseDatabaseWrapper):
         self.connection.autocommit = value
 
     def init_connection_state(self):
-        return True
+        pass
 
     def create_cursor(self, name=None):
         return self.connection.cursor()

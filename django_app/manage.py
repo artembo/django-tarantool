@@ -3,8 +3,14 @@
 import os
 import sys
 from settings import BASE_DIR
+import logging
+
+logger = logging.getLogger(__name__)
+
+APP_DIR = os.path.join(BASE_DIR, 'django_app')
 
 sys.path.append(BASE_DIR)
+sys.path.append(APP_DIR)
 
 
 def main():

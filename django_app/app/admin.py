@@ -1,5 +1,4 @@
 from django.contrib import admin
-from django.db.models import Model
 
 from . import models
 
@@ -14,7 +13,6 @@ admin.site.register(models.PositiveInteger)
 admin.site.register(models.PositiveSmallInteger)
 admin.site.register(models.Boolean)
 admin.site.register(models.NullBoolean)
-admin.site.register(models.Binary)
 
 @admin.register(models.DateTime)
 class DateTimeAdmin(admin.ModelAdmin):
@@ -22,7 +20,13 @@ class DateTimeAdmin(admin.ModelAdmin):
 
 admin.site.register(models.Date)
 admin.site.register(models.Time)
-admin.site.register(models.Char)
+
+
+@admin.register(models.Char)
+class CharAdmin(admin.ModelAdmin):
+    list_per_page = 5
+
+
 admin.site.register(models.Text)
 admin.site.register(models.GenericIPAddress)
 admin.site.register(models.File)

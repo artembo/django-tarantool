@@ -8,6 +8,3 @@ class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):
 
     def prepare_default(self, value):
         pass
-
-    def create_model(self, model):
-        super().create_model(model)

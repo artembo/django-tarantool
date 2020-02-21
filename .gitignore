@@ -11,3 +11,4 @@ tarantool
 /build/
 /dist/
 /_tarantool/
+/__pycache__/

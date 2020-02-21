@@ -1,6 +1,9 @@
+from django.conf import settings
+from django.utils import timezone
 from django.utils.datetime_safe import datetime
 from django.db.backends.base.operations import BaseDatabaseOperations
 from datetime import time
+
 
 class DatabaseOperations(BaseDatabaseOperations):
 
@@ -35,16 +38,15 @@ class DatabaseOperations(BaseDatabaseOperations):
         if value is None:
             return None
         value = datetime.fromtimestamp(int(value))
-        #     if settings.USE_TZ:
-        #         value = timezone.make_aware(value, self.connection.timezone)
+        if settings.USE_TZ:
+            value = timezone.make_aware(value, self.connection.timezone)
         return value
 
     def convert_timefield_value(self, value, expression, connection):
         if value is None:
             return None
-        hours = value // 3600
-        minutes = value % hours // 60
-        seconds = value % 60
+        hours, seconds = divmod(value, 3600)
+        minutes, seconds = divmod(seconds, 60)
         return time(hours, minutes, seconds)
 
     def bulk_insert_sql(self, fields, placeholder_rows):
@@ -56,7 +58,10 @@ class DatabaseOperations(BaseDatabaseOperations):
         return value.timestamp() if value else None
 
     def adapt_datefield_value(self, value):
-        return datetime.fromordinal(value.toordinal()).timestamp() if value else None
+        return datetime.fromordinal(value.toordinal()).timestamp() if value is not None else None
 
     def adapt_timefield_value(self, value):
-        return value.hour * 60 * 60 + value.minute * 60 + value.second if value else None
+        return value.hour * 60 * 60 + value.minute * 60 + value.second if value is not None else None
+
+    def no_limit_value(self):
+        return 131072

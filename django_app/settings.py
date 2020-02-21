@@ -67,6 +67,7 @@ DB_T = {
         'PORT': '3301',
         'USER': 'admin',
         'PASSWORD': 'parol',
+        'AUTOCOMMIT': False
     }
 }
 
@@ -94,7 +95,7 @@ DATABASES = DB_T
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
@@ -109,23 +110,26 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 
-LOGGING_TO_FILE = {
+LOGGING_TO_CONSOLE = {
     'version': 1,
-    'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        }
+    },
     'handlers': {
-        'file': {
+        'console': {
             'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'debug.log'),
-        },
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+        }
     },
     'loggers': {
-        'django': {
-            'handlers': ['file'],
+        'django.db.backends': {
             'level': 'DEBUG',
-            'propagate': True,
-        },
-    },
+            'handlers': ['console'],
+        }
+    }
 }
 
-# LOGGING = LOGGING_TO_FILE
+# LOGGING = LOGGING_TO_CONSOLE
