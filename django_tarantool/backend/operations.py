@@ -45,8 +45,8 @@ class DatabaseOperations(BaseDatabaseOperations):
     def convert_timefield_value(self, value, expression, connection):
         if value is None:
             return None
-        hours, seconds = divmod(value, 3600)
-        minutes, seconds = divmod(seconds, 60)
+        hours, _seconds = divmod(value, 3600)
+        minutes, seconds = divmod(_seconds, 60)
         return time(hours, minutes, seconds)
 
     def bulk_insert_sql(self, fields, placeholder_rows):
