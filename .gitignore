@@ -12,3 +12,4 @@ tarantool
 /dist/
 /_tarantool/
 /__pycache__/
+test*
