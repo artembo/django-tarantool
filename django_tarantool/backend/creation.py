@@ -3,6 +3,7 @@ import shutil
 import subprocess
 import time
 from pathlib import Path
+import socket
 
 from django.core.management import call_command
 from django.db.backends.base.creation import BaseDatabaseCreation
@@ -12,6 +13,7 @@ from django_app import settings
 
 class DatabaseCreation(BaseDatabaseCreation):
     tarantool_process = None
+    tarantool_test_port = 3302
     db_path = None
 
     def _quote_name(self, name):
@@ -22,11 +24,24 @@ class DatabaseCreation(BaseDatabaseCreation):
         Path(path).mkdir(parents=True, exist_ok=True)
         return path
 
+    def wait_for_tarantool(self, port=None):
+        port = port or self.tarantool_test_port
+        s = socket.socket()
+        while True:
+            try:
+                s = s.connect(('127.0.0.1', port))
+            except socket.error:
+                time.sleep(0.1)
+                continue
+            finally:
+                s.close()
+                break
+
     def start_test_tarantool(self):
         test_database_name = self._get_test_db_name()
         self.db_path = self._prepare_db_path(test_database_name)
         self.tarantool_process = subprocess.Popen(['tarantool', 'start.lua'], cwd=self.db_path)
-        time.sleep(1)
+        self.wait_for_tarantool()
 
     def create_test_db(self, verbosity=1, autoclobber=False, serialize=True, keepdb=False):
         settings.DATABASES[self.connection.alias]["PORT"] = 3302
@@ -40,7 +55,6 @@ class DatabaseCreation(BaseDatabaseCreation):
         self.tarantool_process.kill()
 
     def _destroy_test_db(self, test_database_name, verbosity):
-        print(test_database_name)
-        print(self.db_path)
-        # shutil.rmtree()
+        shutil.rmtree(self.db_path)
+
 
