@@ -1,14 +1,19 @@
 import os
 import shutil
+import socket
 import subprocess
 import time
 from pathlib import Path
-import socket
 
 from django.core.management import call_command
 from django.db.backends.base.creation import BaseDatabaseCreation
 
 from django_app import settings
+
+START_LUA = """\
+box.cfg({ listen = %d })
+box.schema.user.passwd('admin', 'parol')
+"""
 
 
 class DatabaseCreation(BaseDatabaseCreation):
@@ -22,6 +27,8 @@ class DatabaseCreation(BaseDatabaseCreation):
     def _prepare_db_path(self, db_name):
         path = os.path.join(settings.BASE_DIR, db_name)
         Path(path).mkdir(parents=True, exist_ok=True)
+        with open(os.path.join(path, 'start.lua'), 'w+') as file:
+            file.write(START_LUA % self.tarantool_test_port)
         return path
 
     def wait_for_tarantool(self, port=None):
@@ -35,6 +42,7 @@ class DatabaseCreation(BaseDatabaseCreation):
                 continue
             finally:
                 s.close()
+                time.sleep(0.1)
                 break
 
     def start_test_tarantool(self):
@@ -44,17 +52,15 @@ class DatabaseCreation(BaseDatabaseCreation):
         self.wait_for_tarantool()
 
     def create_test_db(self, verbosity=1, autoclobber=False, serialize=True, keepdb=False):
-        settings.DATABASES[self.connection.alias]["PORT"] = 3302
-        self.connection.settings_dict["PORT"] = 3302
+        settings.DATABASES[self.connection.alias]["PORT"] = self.tarantool_test_port
+        self.connection.settings_dict["PORT"] = self.tarantool_test_port
         self.start_test_tarantool()
 
-        call_command('migrate', interactive=False)
+        call_command('migrate', 'app', interactive=False)
 
     def destroy_test_db(self, old_database_name=None, verbosity=1, keepdb=False, suffix=None):
-        super().destroy_test_db(old_database_name, verbosity, keepdb, suffix)
         self.tarantool_process.kill()
+        super().destroy_test_db(old_database_name, verbosity, keepdb, suffix)
 
     def _destroy_test_db(self, test_database_name, verbosity):
         shutil.rmtree(self.db_path)
-
-
