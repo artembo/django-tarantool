@@ -68,21 +68,31 @@ class DatabaseWrapper(BaseDatabaseWrapper):
         'BigAutoField': 'AUTOINCREMENT',
     }
 
+    pattern_esc = r"REPLACE(REPLACE(REPLACE({}, '\', '\\'), '%%', '\%%'), '_', '\_')"
     operators = {
         'exact': '= %s',
-        'iexact': '= UPPER(%s)',
-        'contains': 'LIKE %s',
-        'icontains': 'LIKE UPPER(%s)',
-        'regex': '~ %s',
-        'iregex': '~* %s',
+        'iexact': "= UPPER(%s)",
+        'contains': "LIKE %s",
+        'icontains': "LIKE UPPER(%s)",
+        'regex': 'REGEXP %s',
+        'iregex': "REGEXP '(?i)' || %s",
         'gt': '> %s',
         'gte': '>= %s',
         'lt': '< %s',
         'lte': '<= %s',
-        'startswith': 'LIKE %s',
-        'endswith': 'LIKE %s',
-        'istartswith': 'LIKE UPPER(%s)',
-        'iendswith': 'LIKE UPPER(%s)',
+        'startswith': "LIKE %s",
+        'endswith': "LIKE %s",
+        'istartswith': "LIKE UPPER(%s)",
+        'iendswith': "LIKE UPPER(%s)",
+    }
+
+    pattern_ops = {
+        'contains': r"LIKE '%%' || {} || '%%' ESCAPE '\'",
+        'icontains': r"LIKE '%%' || UPPER('{}') || '%%' ESCAPE '\'",
+        'startswith': r"LIKE {} || '%%' ESCAPE '\'",
+        'istartswith': r"LIKE UPPER({}) || '%%' ESCAPE '\'",
+        'endswith': r"LIKE '%%' || {} ESCAPE '\'",
+        'iendswith': r"LIKE '%%' || UPPER({}) ESCAPE '\'",
     }
 
     def get_connection_params(self):
