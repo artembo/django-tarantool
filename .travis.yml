@@ -1,0 +1,11 @@
+language: python
+python:
+  - "3.6"
+
+install:
+  - curl -L https://tarantool.io/installer.sh | sudo bash
+  - pip install -r requirements.txt
+  - pip install git+https://github.com/artembo/tarantool-python@dbapi2
+
+script:
+  - cd django_app && python3 manage.py test
