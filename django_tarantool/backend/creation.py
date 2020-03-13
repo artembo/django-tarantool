@@ -1,14 +1,13 @@
 import os
 import shutil
-import socket
 import subprocess
-import time
 from pathlib import Path
 
 from django.core.management import call_command
 from django.db.backends.base.creation import BaseDatabaseCreation
 
 from django_app import settings
+from django_tarantool.backend.utils import wait_for_tarantool
 
 START_LUA = """\
 box.cfg({ listen = %d })
@@ -17,7 +16,7 @@ box.schema.user.passwd('admin', 'parol')
 
 
 class DatabaseCreation(BaseDatabaseCreation):
-    tarantool_process = None
+    tarantool_proc = None
     tarantool_test_port = 3302
     db_path = None
 
@@ -31,25 +30,11 @@ class DatabaseCreation(BaseDatabaseCreation):
             file.write(START_LUA % self.tarantool_test_port)
         return path
 
-    def wait_for_tarantool(self, port=None):
-        port = port or self.tarantool_test_port
-        s = socket.socket()
-        while True:
-            try:
-                s = s.connect(('127.0.0.1', port))
-            except socket.error:
-                time.sleep(0.1)
-                continue
-            finally:
-                s.close()
-                time.sleep(0.1)
-                break
-
     def start_test_tarantool(self):
         test_database_name = self._get_test_db_name()
         self.db_path = self._prepare_db_path(test_database_name)
-        self.tarantool_process = subprocess.Popen(['tarantool', 'start.lua'], cwd=self.db_path)
-        self.wait_for_tarantool()
+        self.tarantool_proc = subprocess.Popen(['tarantool', 'start.lua'], cwd=self.db_path)
+        wait_for_tarantool(self.connection, port=self.tarantool_test_port)
 
     def create_test_db(self, verbosity=1, autoclobber=False, serialize=True, keepdb=False):
         settings.DATABASES[self.connection.alias]["PORT"] = self.tarantool_test_port
@@ -59,7 +44,7 @@ class DatabaseCreation(BaseDatabaseCreation):
         call_command('migrate', 'app', interactive=False)
 
     def destroy_test_db(self, old_database_name=None, verbosity=1, keepdb=False, suffix=None):
-        self.tarantool_process.kill()
+        self.tarantool_proc.kill()
         super().destroy_test_db(old_database_name, verbosity, keepdb, suffix)
 
     def _destroy_test_db(self, test_database_name, verbosity):
