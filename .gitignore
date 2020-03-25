@@ -1,9 +1,10 @@
+/__pycache__/
+*.pyc
 venv
 tarantool_db
 sqlite.db
 django_app/sqlite.db
 .pytest_cache
-*.pyc
 tarantool
 *.log
 .idea
@@ -11,5 +12,4 @@ tarantool
 /build/
 /dist/
 /_tarantool/
-/__pycache__/
-test*
+
