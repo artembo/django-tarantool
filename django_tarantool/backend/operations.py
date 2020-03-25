@@ -36,7 +36,7 @@ class DatabaseOperations(BaseDatabaseOperations):
     def convert_datefield_value(self, value, expression, connection):
         if value is None:
             return None
-        return datetime.fromtimestamp(int(value))
+        return datetime.fromtimestamp(int(value)).date()
 
     def convert_datetimefield_value(self, value, expression, connection):
         if value is None:
