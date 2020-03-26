@@ -46,7 +46,7 @@ class DatabaseWrapper(BaseDatabaseWrapper):
         'UUIDField': 'VARCHAR(32)',
         'SlugField': 'VARCHAR(%(max_length)s)',
         'DateField': 'UNSIGNED',
-        'DateTimeField': 'UNSIGNED',
+        'DateTimeField': 'NUMBER',
         'TimeField': 'UNSIGNED',
         'DurationField': 'INTEGER',
         'OneToOneField': 'INTEGER',

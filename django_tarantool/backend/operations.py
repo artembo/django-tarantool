@@ -41,7 +41,7 @@ class DatabaseOperations(BaseDatabaseOperations):
     def convert_datetimefield_value(self, value, expression, connection):
         if value is None:
             return None
-        value = datetime.fromtimestamp(int(value))
+        value = datetime.fromtimestamp(value)
         if settings.USE_TZ:
             value = timezone.make_aware(value, self.connection.timezone)
         return value

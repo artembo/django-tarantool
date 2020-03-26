@@ -1,6 +1,7 @@
 /__pycache__/
 *.pyc
 venv
+.idea
 tarantool_db
 sqlite.db
 django_app/sqlite.db
