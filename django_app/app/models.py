@@ -1,3 +1,4 @@
+import uuid as uuid
 from django.conf import settings
 from django.db import models
 
@@ -85,12 +86,17 @@ class ForeignKey(models.Model):
     def __str__(self): return str(self.pk)
 
 
+class M2MDependency(models.Model):
+    pass
+
+
 # Required "ALTER TABLE 'table_name' ADD COLUMN" which is not working in 2.3
-# class ManyToMany(models.Model):
-#     m2m = models.ManyToManyField('app.ForeignKey', null=True)
-#     name = models.CharField(max_length=20)
-#
-#     def __str__(self): return self.name
+# Used workaround from sqlite3 backend
+class ManyToMany(models.Model):
+    m2m = models.ManyToManyField('app.M2MDependency', blank=True)
+    name = models.CharField(max_length=20)
+
+    def __str__(self): return self.name
 
 
 class GenericIPAddress(models.Model):
@@ -175,4 +181,4 @@ class AllModel(models.Model):
     small_integer = models.SmallIntegerField()
     text = models.TextField(null=True)
     time = models.TimeField()
-    uuid = models.UUIDField()
+    uuid = models.UUIDField(default=uuid.uuid4)

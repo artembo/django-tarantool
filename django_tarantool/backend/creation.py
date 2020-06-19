@@ -34,7 +34,7 @@ class DatabaseCreation(BaseDatabaseCreation):
         test_database_name = self._get_test_db_name()
         self.db_path = self._prepare_db_path(test_database_name)
         self.tarantool_proc = subprocess.Popen(['tarantool', 'start.lua'], cwd=self.db_path)
-        wait_for_tarantool(self.connection, port=self.tarantool_test_port)
+        wait_for_tarantool(self.connection)
 
     def create_test_db(self, verbosity=1, autoclobber=False, serialize=True, keepdb=False):
         settings.DATABASES[self.connection.alias]["PORT"] = self.tarantool_test_port
