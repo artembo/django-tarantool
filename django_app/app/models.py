@@ -86,9 +86,14 @@ class ForeignKey(models.Model):
     def __str__(self): return str(self.pk)
 
 
+class M2MDependency(models.Model):
+    pass
+
+
 # Required "ALTER TABLE 'table_name' ADD COLUMN" which is not working in 2.3
+# Used workaround from sqlite3 backend
 class ManyToMany(models.Model):
-    m2m = models.ManyToManyField('app.ForeignKey', null=True)
+    m2m = models.ManyToManyField('app.M2MDependency', blank=True)
     name = models.CharField(max_length=20)
 
     def __str__(self): return self.name
