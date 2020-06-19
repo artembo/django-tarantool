@@ -11,7 +11,7 @@ from django_tarantool.backend.utils import wait_for_tarantool
 
 START_LUA = """\
 box.cfg({ listen = %d })
-box.schema.user.passwd('admin', 'parol')
+box.schema.user.passwd('admin', 'password')
 """
 
 
