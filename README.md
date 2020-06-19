@@ -46,10 +46,3 @@ DATABASES = {
     }
 }
 ```
-
-### Limitations:
-
-- altering tables is not supported (need to squash existed migrations or remove it and make again)
-- transactions are not supported (only atomic)
-
-
