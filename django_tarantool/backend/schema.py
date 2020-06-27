@@ -1,12 +1,12 @@
 import copy
+from random import choice
+from string import ascii_lowercase
 
 from django.apps.registry import Apps
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.backends.ddl_references import Statement
 from django.db.backends.utils import strip_quotes
 from django.db.models import UniqueConstraint
-from django.db.transaction import atomic
-from django.db.utils import NotSupportedError
 
 
 class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):
@@ -15,9 +15,13 @@ class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):
     sql_create_fk = None
     sql_create_inline_fk = "REFERENCES %(to_table)s (%(to_column)s) DEFERRABLE INITIALLY DEFERRED"
     sql_create_unique = "CREATE UNIQUE INDEX %(name)s ON %(table)s (%(columns)s)"
-    sql_delete_unique = "DROP INDEX %(name)s"
+    sql_delete_unique = 'DROP INDEX %(name)s ON %(table)s'
 
     def quote_value(self, value):
+        if value is None:
+            return "NULL"
+        if isinstance(value, bool):
+            return str(value)
         return "'%s'" % value
 
     def _is_referenced_by_fk_constraint(self, table_name, column_name=None, ignore_self=False):
@@ -39,75 +43,17 @@ class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):
                         return True
         return False
 
-    def alter_db_table(self, model, old_db_table, new_db_table, disable_constraints=True):
-        if (not self.connection.features.supports_atomic_references_rename and
-                disable_constraints and self._is_referenced_by_fk_constraint(old_db_table)):
-            if self.connection.in_atomic_block:
-                raise NotSupportedError((
-                    'Renaming the %r table while in a transaction is not '
-                    'supported on SQLite < 3.26 because it would break referential '
-                    'integrity. Try adding `atomic = False` to the Migration class.'
-                ) % old_db_table)
-            self.connection.enable_constraint_checking()
-            super().alter_db_table(model, old_db_table, new_db_table)
-            self.connection.disable_constraint_checking()
-        else:
-            super().alter_db_table(model, old_db_table, new_db_table)
-
-    def alter_field(self, model, old_field, new_field, strict=False):
-        old_field_name = old_field.name
-        table_name = model._meta.db_table
-        _, old_column_name = old_field.get_attname_column()
-        if (new_field.name != old_field_name and
-                not self.connection.features.supports_atomic_references_rename and
-                self._is_referenced_by_fk_constraint(table_name, old_column_name, ignore_self=True)):
-            if self.connection.in_atomic_block:
-                raise NotSupportedError((
-                    'Renaming the %r.%r column while in a transaction is not '
-                    'supported on SQLite < 3.26 because it would break referential '
-                    'integrity. Try adding `atomic = False` to the Migration class.'
-                ) % (model._meta.db_table, old_field_name))
-            with atomic(self.connection.alias):
-                super().alter_field(model, old_field, new_field, strict=strict)
-                # Follow SQLite's documented procedure for performing changes
-                # that don't affect the on-disk content.
-                # https://sqlite.org/lang_altertable.html#otheralter
-                with self.connection.cursor() as cursor:
-                    schema_version = cursor.execute('PRAGMA schema_version').fetchone()[0]
-                    cursor.execute('PRAGMA writable_schema = 1')
-                    references_template = ' REFERENCES "%s" ("%%s") ' % table_name
-                    new_column_name = new_field.get_attname_column()[1]
-                    search = references_template % old_column_name
-                    replacement = references_template % new_column_name
-                    cursor.execute('UPDATE sqlite_master SET sql = replace(sql, %s, %s)', (search, replacement))
-                    cursor.execute('PRAGMA schema_version = %d' % (schema_version + 1))
-                    cursor.execute('PRAGMA writable_schema = 0')
-                    # The integrity check will raise an exception and rollback
-                    # the transaction if the sqlite_master updates corrupt the
-                    # database.
-                    cursor.execute('PRAGMA integrity_check')
-            # Perform a VACUUM to refresh the database representation from
-            # the sqlite_master table.
-            with self.connection.cursor() as cursor:
-                cursor.execute('VACUUM')
-        else:
-            super().alter_field(model, old_field, new_field, strict=strict)
-
     def _remake_table(self, model, create_field=None, delete_field=None, alter_field=None):
         """
         Shortcut to transform a model from old_model into new_model
 
-        This follows the correct procedure to perform non-rename or column
-        addition operations based on SQLite's documentation
-
-        https://www.sqlite.org/lang_altertable.html#caution
-
         The essential steps are:
-          1. Create a table with the updated definition called "new__app_model"
+          1. Create a table with the updated definition called "new__(rand_name)__app_model"
           2. Copy the data from the existing "app_model" table to the new table
-          3. Drop the "app_model" table
-          4. Rename the "new__app_model" table to "app_model"
-          5. Restore any index of the previous "app_model" table.
+          3. If there is foreign key that references the table, drop the referencing constraints
+          4. Drop the "app_model" table
+          5. Rename the "new__(rand_name)__app_model" table to "app_model"
+          6. Restore any index of the previous "app_model" table.
         """
         # Self-referential fields must be recreated rather than copied from
         # the old model to ensure their remote_field.field_name doesn't refer
@@ -218,9 +164,10 @@ class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):
 
         # Construct a model with a renamed table name.
         body_copy = copy.deepcopy(body)
+        suffix = ''.join(choice(ascii_lowercase) for _ in range(6))
         meta_contents = {
             'app_label': model._meta.app_label,
-            'db_table': 'new__%s' % strip_quotes(model._meta.db_table),
+            'db_table': 'new__%s__%s' % (suffix, strip_quotes(model._meta.db_table)),
             'unique_together': unique_together,
             'index_together': index_together,
             'indexes': indexes,
@@ -249,7 +196,7 @@ class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):
         # Rename the new table to take way for the old
         self.alter_db_table(
             new_model, new_model._meta.db_table, model._meta.db_table,
-            disable_constraints=False,
+            # disable_constraints=False,
         )
 
         # Run deferred SQL on correct table
@@ -261,6 +208,8 @@ class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):
             restore_pk_field.primary_key = True
 
     def delete_model(self, model, handle_autom2m=True):
+        self.drop_referenced_fk(model)
+
         if handle_autom2m:
             super().delete_model(model)
         else:
@@ -366,6 +315,25 @@ class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):
             super().remove_constraint(model, constraint)
         else:
             self._remake_table(model)
+
+    def drop_referenced_fk(self, model):
+        sql = """
+            SELECT constraint_name, referencing FROM 
+                (SELECT "name" AS constraint_name, 
+                    (SELECT "name" 
+                     FROM "_vspace" x 
+                     WHERE x."id" = y."child_id") 
+                     AS referencing, 
+                        (SELECT "name" 
+                         FROM "_vspace" x 
+                         WHERE x."id" = y."parent_id") 
+                     AS referenced 
+            FROM "_fk_constraint" y where referenced = '%s')
+        """ % model._meta.db_table
+        with self.connection.cursor() as cursor:
+            cursor.execute(sql)
+            for constraint, table in cursor.rows:
+                cursor.execute('ALTER TABLE "%s" DROP CONSTRAINT "%s"' % (table, constraint))
 
 
 """

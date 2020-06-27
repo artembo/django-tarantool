@@ -42,7 +42,6 @@ DATABASES = {
         'PORT': '3301',
         'USER': 'admin',
         'PASSWORD': 'password',
-        'ATOMIC': True,
     }
 }
 ```
