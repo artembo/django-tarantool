@@ -6,12 +6,12 @@ install:
   - pip install -r requirements.txt
   - pip install git+https://github.com/artembo/tarantool-python@dbapi2
 script:
-  - cd django_app && python3 manage.py test
+  - cd django_app && python3 manage.py test && cd ..
 deploy:
   provider: pypi
-  username: __token__
+  username: "__token__"
   password:
-    secure: Xog6HoSUDA80WIcAWPf3Bm7FT0tmU/g475ald4BsFCSAnJKGnIts+3R2PifumDtcWjS4G+Okd5PkgHF0kf6ApWzARYjWJY6FoYIrQy4mMwpjgwr72htNHS8/Oy1vRHgMhIs68nIms5JvHfbgnrSTCyWBAPKZtRI/dihsH69AVBL/FxpeyzGG9txjbooEA1Mw96VEwvWmoX4YqgNvx8JyA7REyIEnEBvXCJ7TjCKzfpzj7nEimZe0l5h5EgMeqLeiHT4NI6Iq50smSgXl7VmMlEh5AM9esM3iqIHALaq13xWUUZ8zkxfn+lnP9jHdf+MH03R//MOfyO6lNI5t9mw1ASvPE3EA6FMGSDehLfIOV/cc/fu/JojDrrmLifYzZUHAhGEVQ6KWKoI0n9dhfipiy3ym9NvnDn6pATDp6NdH9AWsgFalEhEAMHDomR8u5cJxCX632RVXalwg+U3P3b0hG3N0DMTzPXYQXQO5eZNT4qFEu+0xHQceGaOdSWjawTMM30IOFzA+0sg8sFUpx8LAEdOlx/GrOWW7gTP4l+FXXOa1WGHXVXgQ3r5Iud/Hkfbh8dFPzeRg2UkgRX7VRTmDW7AOgSDSD143MGqeGzYNDeYsNj6XtCOUR8OsHfBKePxVJwPVoiyLThU68+Tm9GRgpCG0K94EPZbooZqPJfZQjqo=
+    secure: "EWmmZCZcCCtMvlvEQNZkk3aBOPDa2AdJcklMnCHDfzXX3YOhnJQOpTYCTAdDIIDx/pvx9SIo6sDyoHhydbGh2a8D1dyIudW1dwBqKIJLcBU3fJ+/BkjUadw4eqToIiqP1jyZ2LEKillLmgtetkewkyPwXKhZTMK9mkQtWzZ6T6nbN20SlXAF+/7h1+cuFFiKuV+EsriJUIGINHEwUG4l6h2l32wlPKwQ+nOIVldJLjGznOdQ7yBLf1iup2pQ6dyk/CwovW+apAxgLOPpf7CkFUzTxpM5WjL+bUdsVi5eOIKnOwSHYow5PyGNa2X8Q/x31UL/YB9Vyu+UQYLjlsOIj4GYJeOGugn3ei6HrLtCNroPB3QVWbLO3VRhb9u+gxFFcqZT2x9jF0Lun8UcAllPxeHpDjG6rcf2U8uIKsRuWOr3F8AwH6k3Nv3BNKATodOnAQFj0VOZAJrRRg7lx328Ez4tPQyZJjUEJwRBTg9irL7mqRhewHQzhZ5nuw9PFY+s5jkcu/2p8s2VfleDI3b/lbLuNWYaJQcwTfYm+XoyZupPj9ayjiTuI8yTE7yczoI/k4kcxewq8na5f5CKXXph0NrY+4/BJbZlWP2HvsDrF5MeIU90xuDMgH01CUaU7LXmj/8fSL0/WHhMLECRYqGJzvPBFJcyli8k9RyjvdikJEY="
   on:
     tags: true
   skip_cleanup: true
