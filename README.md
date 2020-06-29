@@ -1,7 +1,7 @@
 # Django Tarantool database backend
-Very first version
+[![Build Status](https://travis-ci.org/artembo/django-tarantool.svg?branch=master)](https://travis-ci.org/artembo/django-tarantool)
 
-Installation
+## Installation
 
 
 Install Tarantool v2 or later. See the installation manual
