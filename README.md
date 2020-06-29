@@ -1,5 +1,5 @@
 # Django Tarantool database backend
-[![Build Status](https://travis-ci.org/artembo/django-tarantool.svg?branch=master)](https://travis-ci.org/artembo/django-tarantool)
+[![Build Status](https://travis-ci.com/artembo/django-tarantool.svg?branch=master)](https://travis-ci.org/artembo/django-tarantool)
 
 ## Installation
 
