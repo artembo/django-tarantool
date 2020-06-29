@@ -23,26 +23,24 @@ class DatabaseIntrospection(BaseDatabaseIntrospection):
             "iid" AS iid,
             "type" AS index_type
         FROM "_vindex" y
-        WHERE _table_constraints_opts_unique("opts") = TRUE AND table_name = 
-        '%s';
-        """ % table_name)
+        WHERE table_name = '%s';""" % table_name)
 
-        for constraint_catalog, constraint_schema, index, \
-            table_name, constraint_type, initially_deferrable, deferred, \
-            enforced, _id, iid, index_type \
-                in cursor.fetchall():
-                constraints[index] = {
-                    "columns": [],
-                    "primary_key": constraint_type == 'PRIMARY',
-                    "unique": constraint_type == 'UNIQUE',
-                    "foreign_key": None,
-                    "check": False,
-                    "index": False,
-                }
-                cursor.execute('PRAGMA index_info("%s"."%s")' %
-                               (table_name, index))
-                for constraint_data in cursor.fetchall():
-                    constraints[index]['columns'].append(constraint_data[2])
+        for constraint_catalog, constraint_schema, index, table_name, \
+            constraint_type, initially_deferrable, deferred, enforced, \
+                _id, iid, index_type in cursor.fetchall():
+
+            constraints[index] = {
+                "columns": [],
+                "primary_key": constraint_type == 'PRIMARY',
+                "unique": constraint_type == 'UNIQUE',
+                "foreign_key": None,
+                "check": False,
+                "index": False,
+            }
+            cursor.execute('PRAGMA index_info("%s"."%s")' % (table_name, index))
+
+            for constraint_data in cursor.fetchall():
+                constraints[index]['columns'].append(constraint_data[2])
         return constraints
 
     def get_key_columns(self, cursor, table_name):
