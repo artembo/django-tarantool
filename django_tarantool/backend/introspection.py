@@ -69,7 +69,10 @@ class DatabaseIntrospection(BaseDatabaseIntrospection):
                 "check": False,
                 "index": False,
             }
-            cursor.execute('PRAGMA index_info("%s"."%s")' % (table_name, index))
+            cursor.execute('PRAGMA index_info(%s.%s)' % (
+                self.connection.ops.quote_name(table_name),
+                self.connection.ops.quote_name(index)
+            ))
 
             for constraint_data in cursor.fetchall():
                 constraints[index]['columns'].append(constraint_data[2])
@@ -86,6 +89,27 @@ class DatabaseIntrospection(BaseDatabaseIntrospection):
                 'unique': False,
                 'foreign_key': (table, to),
                 'check': False,
+                'index': False,
+            }
+        cursor.execute("""
+        SELECT
+            "name" AS constraint_name,
+            "code" AS check_clause,
+            (SELECT "name" FROM "_vspace" x WHERE x."id" = y."space_id") AS 
+            table_name,
+            "language" AS language,
+            "is_deferred" AS is_deferred,
+            "space_id" AS space_id
+        FROM "_ck_constraint" y
+        WHERE table_name = %s;""", [table_name])
+        for row in cursor.fetchall():
+            constraint_name = row[0]
+            constraints[constraint_name] = {
+                'columns': [],
+                'primary_key': False,
+                'unique': False,
+                'foreign_key': None,
+                'check': True,
                 'index': False,
             }
         return constraints
@@ -144,7 +168,7 @@ class DatabaseIntrospection(BaseDatabaseIntrospection):
         return [{'table': table_name, 'column': pk_col}]
 
     def get_table_list(self, cursor):
-        spaces = cursor.execute('SELECT * FROM "_space"')
+        cursor.execute('SELECT "name" FROM "_space" '
+                       'WHERE "name" NOT LIKE \'X_%\' ESCAPE \'X\'')
 
-        return [TableInfo(table[2], 't') for table in spaces if
-                not table[2].startswith('_')]
+        return [TableInfo(table[0], 't') for table in cursor.fetchall()]
