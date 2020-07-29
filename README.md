@@ -1,5 +1,5 @@
 # Django Tarantool database backend
-[![Build Status](https://travis-ci.com/artembo/django-tarantool.svg?branch=master)](https://travis-ci.org/artembo/django-tarantool)
+[![Build Status](https://travis-ci.com/artembo/django-tarantool.svg?branch=master)](https://travis-ci.com/artembo/django-tarantool)
 
 ## Installation
 
@@ -24,10 +24,10 @@ tarantool> box.schema.user.passwd('admin', 'password')
 ```
 
 Install tarantool-python with dbapi2 on board.  
-Now it is hosted at https://github.com/artembo/tarantool-python/tree/dbapi2 
+Now it is hosted at https://github.com/tarantool/tarantool-python/tree/dbapi2 
 
 ```
-pip install git+https://github.com/artembo/tarantool-python@dbapi2 
+pip install git+https://github.com/tarantool/tarantool-python@dbapi2 
 ```
 
 To set up django-tarantool enter in the command line 
