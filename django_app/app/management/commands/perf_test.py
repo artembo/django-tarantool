@@ -14,7 +14,9 @@ class Command(BaseCommand):
         t = datetime.datetime.now()
         # models_list = [ForeignKey, Text, Integer, Char, Float, GenericIPAddress, Uuid, Slug, DateTime, Date, Time]
         # for model in models_list:
-        baker.make(AllModel, ITERATIONS)
+        # baker.make(AllModel, ITERATIONS)
+        for _ in range(30000):
+            Integer.objects.create(integer=123123)
         dt = datetime.datetime.now() - t
 
         print(f"Insertion took {dt}")

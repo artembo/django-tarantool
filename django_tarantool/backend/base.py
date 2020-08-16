@@ -8,8 +8,6 @@ from django.db.backends.utils import (
     CursorDebugWrapper as BaseCursorDebugWrapper,
 )
 
-import tarantool.dbapi
-
 from .client import DatabaseClient                          # NOQA isort:skip
 from .creation import DatabaseCreation                      # NOQA isort:skip
 from .features import DatabaseFeatures                      # NOQA isort:skip
@@ -18,7 +16,10 @@ from .operations import DatabaseOperations                  # NOQA isort:skip
 from .schema import DatabaseSchemaEditor                    # NOQA isort:skip
 
 
-Database = tarantool.dbapi.Connection
+from tarantool import dbapi
+
+
+Database = dbapi
 
 
 class DatabaseWrapper(BaseDatabaseWrapper):
@@ -110,23 +111,51 @@ class DatabaseWrapper(BaseDatabaseWrapper):
             conn_params['host'] = settings_dict['HOST']
         if settings_dict['PORT']:
             conn_params['port'] = settings_dict['PORT']
+        conn_params['use_list'] = False
         return conn_params
 
     def get_new_connection(self, conn_params):
-        connection = Database(**conn_params)
+        connection = dbapi.connect(**conn_params)
         return connection
 
     def _set_autocommit(self, value):
-        self.connection.autocommit = value
+        pass
 
     def init_connection_state(self):
         pass
 
     def create_cursor(self, name=None):
-        return self.connection.cursor()
+        return CursorWrapper(self.connection.cursor())
 
     def make_debug_cursor(self, cursor):
         return CursorDebugWrapper(cursor, self)
+
+
+class CursorWrapper:
+    """Tarantool supports only qmark and named param styles
+    the easies way to send SQL query with proper for tarantool
+    parameters is to convert them to qmark style.
+    We need to overwrite execute and executemany methods to do it.
+    """
+    def __init__(self, cursor):
+        self.cursor = cursor
+
+    def execute(self, query, params=()):
+        query = self.convert_query(query, len(params)) if params else query
+        return self.cursor.execute(query, params)
+
+    def executemany(self, query, param_list):
+        query = self.convert_query(query, len(param_list[0])) if param_list else query
+        return self.cursor.executemany(query, param_list)
+
+    def convert_query(self, query, num_params):
+        return query % tuple("?" * num_params)
+
+    def __getattr__(self, attr):
+        return getattr(self.cursor, attr)
+
+    def __iter__(self):
+        return iter(self.cursor)
 
 
 class CursorDebugWrapper(BaseCursorDebugWrapper):

@@ -20,8 +20,8 @@ class BigIntegerTests(TestCase):
     def test_extremal_values(self):
         int_biggest = BigInteger.objects.create(big_integer=18446744073709551615)
         self.assertEqual(int_biggest.big_integer, 18446744073709551615)
-        int_smallest = BigInteger.objects.create(big_integer=-9223372036854776839)
-        self.assertEqual(int_smallest.big_integer, -9223372036854776839)
+        int_smallest = BigInteger.objects.create(big_integer=-9223372036854775808)
+        self.assertEqual(int_smallest.big_integer, -9223372036854775808)
         self.assertLess(int_smallest.big_integer, int_biggest.big_integer)
         with self.assertRaises(DatabaseError):
             BigInteger.objects.create(big_integer=18446744073709551616)
