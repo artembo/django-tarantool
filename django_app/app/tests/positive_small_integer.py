@@ -23,7 +23,7 @@ class PositiveSmallIntegerTests(TestCase):
         int_smallest = PositiveSmallInteger.objects.create(positive_small_integer=0)
         self.assertEqual(int_smallest.positive_small_integer, 0)
         self.assertLess(int_smallest.positive_small_integer, int_biggest.positive_small_integer)
-        with self.assertRaises(DatabaseError):
+        with self.assertRaises(ValueError):
             PositiveSmallInteger.objects.create(positive_small_integer=18446744073709551616)
         with self.assertRaises(DatabaseError):
             PositiveSmallInteger.objects.create(positive_small_integer=-1)

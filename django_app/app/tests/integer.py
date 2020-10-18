@@ -23,7 +23,7 @@ class IntegerTests(TestCase):
         int_smallest = Integer.objects.create(integer=-9223372036854775808)
         self.assertEqual(int_smallest.integer, -9223372036854775808)
         self.assertLess(int_smallest.integer, int_biggest.integer)
-        with self.assertRaises(DatabaseError):
+        with self.assertRaises(ValueError):
             Integer.objects.create(integer=18446744073709551616)
-        with self.assertRaises(DatabaseError):
+        with self.assertRaises(ValueError):
             Integer.objects.create(integer=-9223372036854776840)
