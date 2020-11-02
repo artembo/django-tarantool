@@ -24,13 +24,16 @@ tarantool> box.schema.user.passwd('admin', 'password')
 ```
 
 Install tarantool-python with dbapi2 on board.  
-Now it is hosted at https://github.com/tarantool/tarantool-python/tree/dbapi2 
+Now it is hosted at https://github.com/tarantool/tarantool-python/tree/master  
+**Note:** The PIP *tarantool* package will be updated soon, you'll be able
+to install it with *dbapi2* module by `pip install tarantool` when 
+`tarantool>0.6.6` is released.
 
 ```
-pip install git+https://github.com/tarantool/tarantool-python@dbapi2 
+pip install git+https://github.com/tarantool/tarantool-python@master#egg=tarantool 
 ```
 
-To set up django-tarantool enter in the command line 
+To set up django-tarantool enter in the command line: 
 ```
 pip install django-tarantool
 ```
@@ -47,3 +50,8 @@ DATABASES = {
     }
 }
 ```
+Run `migrate` as usual:  
+`python manage.py migrate`
+
+Run Django develepment server:  
+`python manage.py runserver 0:8000`
