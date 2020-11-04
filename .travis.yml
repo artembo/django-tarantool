@@ -6,7 +6,7 @@ python:
 install:
   - curl -L https://tarantool.io/installer.sh | sudo bash
   - pip install -r requirements.txt
-  - pip install git+https://github.com/tarantool/tarantool-python@dbapi2
+  - pip install git+https://github.com/tarantool/tarantool-python@master
 
 script:
   - cd django_app && python3 manage.py test && cd ..
