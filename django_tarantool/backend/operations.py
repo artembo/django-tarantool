@@ -58,11 +58,6 @@ class DatabaseOperations(BaseDatabaseOperations):
             value = uuid.UUID(value)
         return value
 
-    def bulk_insert_sql(self, fields, placeholder_rows):
-        placeholder_rows_sql = (", ".join(row) for row in placeholder_rows)
-        values_sql = ", ".join("(%s)" % sql for sql in placeholder_rows_sql)
-        return "VALUES " + values_sql
-
     def adapt_datetimefield_value(self, value):
         return value.timestamp() if value else None
 
@@ -70,12 +65,23 @@ class DatabaseOperations(BaseDatabaseOperations):
         return datetime.fromordinal(value.toordinal()).timestamp() if value is not None else None
 
     def adapt_timefield_value(self, value):
-        return value.hour * 60 * 60 + value.minute * 60 + value.second if value is not None else None
+        return value.hour * 60 * 60 + value.minute * 60 + value.second if \
+            value is not None else None
 
     def lookup_cast(self, lookup_type, internal_type=None):
         if lookup_type in ('iexact', 'icontains', 'istartswith', 'iendswith'):
             return 'UPPER(%s)'
         return '%s'
+
+    def bulk_insert_sql(self, fields, placeholder_rows):
+        placeholder_rows_sql = (", ".join(row) for row in placeholder_rows)
+        values_sql = ", ".join("(%s)" % sql for sql in placeholder_rows_sql)
+        return "VALUES " + values_sql
+
+    def bulk_batch_size(self, fields, objs):
+        if fields:
+            return self.connection.features.max_query_params // len(fields)
+        return len(objs)
 
     def no_limit_value(self):
         return 131072

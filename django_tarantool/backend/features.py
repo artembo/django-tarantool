@@ -13,6 +13,8 @@ class DatabaseFeatures(BaseDatabaseFeatures):
     can_introspect_ip_address_field = False  #
     can_introspect_time_field = False  #
 
+    max_query_params = 65000
+
     @cached_property
     def supports_transactions(self):
         return False
