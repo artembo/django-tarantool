@@ -47,9 +47,16 @@ DATABASES = {
         'PORT': '3301',
         'USER': 'admin',
         'PASSWORD': 'password',
+        'CONN_MAX_AGE': 3600,
     }
 }
 ```
+
+Mind using *CONN_MAX_AGE* param as very important. 
+It allows to keep connection opened for the specified time in seconds. 
+Otherwise, Django will open the connection to the Tarantool instance on each request
+and close after it, which increases the request latency.
+
 Run `migrate` as usual:  
 `python manage.py migrate`
 
