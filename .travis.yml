@@ -4,7 +4,7 @@ python:
   - '3.6'
 
 install:
-  - curl -L https://tarantool.io/installer.sh | sudo bash
+  - curl -L https://tarantool.io/installer.sh | VER=2.3 sudo -E bash
   - pip install -r requirements.txt
   - pip install git+https://github.com/tarantool/tarantool-python@master
 
