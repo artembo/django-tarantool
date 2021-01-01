@@ -68,6 +68,7 @@ DB_T = {
         'PORT': '3301',
         'USER': 'admin',
         'PASSWORD': 'password',
+        'CONN_MAX_AGE': 3600,
     }
 }
 
@@ -85,6 +86,7 @@ DB_P = {
         'USER': 'postgres',
         'PASSWORD': 'parol',
         'HOST': 'localhost',
+        'CONN_MAX_AGE': 3600,
     }
 }
 
