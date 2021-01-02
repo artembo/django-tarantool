@@ -86,5 +86,5 @@ class DatabaseOperations(BaseDatabaseOperations):
     def no_limit_value(self):
         return 131072
 
-    def sql_flush(self, style, tables, sequences, allow_cascade=False):
+    def sql_flush(self, style, tables, *args, **kwargs):
         return []
