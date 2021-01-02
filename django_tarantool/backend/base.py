@@ -4,6 +4,7 @@ Tarantool database backend for Django.
 
 
 from django.db.backends.base.base import BaseDatabaseWrapper
+from django.db.backends.base.validation import BaseDatabaseValidation
 from django.db.backends.utils import (
     CursorDebugWrapper as BaseCursorDebugWrapper,
 )
@@ -95,6 +96,15 @@ class DatabaseWrapper(BaseDatabaseWrapper):
         'endswith': r"LIKE '%%' || {} ESCAPE '\'",
         'iendswith': r"LIKE '%%' || UPPER({}) ESCAPE '\'",
     }
+
+    def __init__(self, *args, **kwargs):
+        super(DatabaseWrapper, self).__init__(*args, **kwargs)
+
+        self.ops = DatabaseOperations(self)
+        self.features = DatabaseFeatures(self)
+        self.creation = DatabaseCreation(self)
+        self.introspection = DatabaseIntrospection(self)
+        self.validation = BaseDatabaseValidation(self)
 
     def get_connection_params(self):
         settings_dict = self.settings_dict

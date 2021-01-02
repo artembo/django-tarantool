@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="django-tarantool",
-    version="0.0.18",
+    version="0.0.19",
     package_dir={"django-tarantool": os.path.join("django_tarantool")},
     author="Artem Morozov",
     author_email="artembo@me.com",
@@ -17,7 +17,17 @@ setuptools.setup(
     url="https://github.com/artembo/django-tarantool",
     packages=setuptools.find_packages(),
     classifiers=[
-        "Programming Language :: Python :: 3",
+        'Environment :: Web Environment',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 3 :: Only',
+        'Framework :: Django',
+        'Framework :: Django :: 1.10',
+        'Framework :: Django :: 1.11',
+        'Framework :: Django :: 2.0',
+        'Framework :: Django :: 2.1',
+        'Framework :: Django :: 2.2',
+        'Framework :: Django :: 3.0',
+        'Framework :: Django :: 3.1',
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],

@@ -1,9 +1,9 @@
+from django.conf.urls import url
 from django.contrib import admin
-from django.urls import path
 
 from app.views import index
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', index)
+    url(r'^admin/', admin.site.urls),
+    url(r'^$', index)
 ]

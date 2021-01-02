@@ -30,15 +30,18 @@ class DatabaseOperations(BaseDatabaseOperations):
             converters.append(self.convert_booleanfield_value)
         return converters
 
-    def convert_booleanfield_value(self, value, expression, connection):
+    def convert_booleanfield_value(self, value, expression, connection, *args,
+                                   **kwargs):
         return value
 
-    def convert_datefield_value(self, value, expression, connection):
+    def convert_datefield_value(self, value, expression, connection, *args,
+                                **kwargs):
         if value is None:
             return None
         return datetime.fromtimestamp(int(value)).date()
 
-    def convert_datetimefield_value(self, value, expression, connection):
+    def convert_datetimefield_value(self, value, expression, connection, *args,
+                                    **kwargs):
         if value is None:
             return None
         value = datetime.fromtimestamp(value)
@@ -46,14 +49,16 @@ class DatabaseOperations(BaseDatabaseOperations):
             value = timezone.make_aware(value, self.connection.timezone)
         return value
 
-    def convert_timefield_value(self, value, expression, connection):
+    def convert_timefield_value(self, value, expression, connection, *args,
+                                **kwargs):
         if value is None:
             return None
         hours, _seconds = divmod(value, 3600)
         minutes, seconds = divmod(_seconds, 60)
         return time(hours, minutes, seconds)
 
-    def convert_uuidfield_value(self, value, expression, connection):
+    def convert_uuidfield_value(self, value, expression, connection, *args,
+                                **kwargs):
         if value is not None:
             value = uuid.UUID(value)
         return value

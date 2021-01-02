@@ -4,17 +4,30 @@ from string import ascii_lowercase
 
 from django.apps.registry import Apps
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
-from django.db.backends.ddl_references import Statement
-from django.db.backends.utils import strip_quotes
-from django.db.models import UniqueConstraint
+from .utils import strip_quotes
+
+try:
+    from django.db.backends.ddl_references import Statement
+
+    use_ddl_references_statement = True
+except ImportError:
+    use_ddl_references_statement = False
+
+try:
+    from django.db.models import UniqueConstraint
+
+    use_unique_constraints = True
+except ImportError:
+    use_unique_constraints = False
 
 
-class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):
-
+class AbstractDatabaseSchemaEditor(BaseDatabaseSchemaEditor):
     sql_delete_table = "DROP TABLE %(table)s"
     sql_create_fk = None
-    sql_create_inline_fk = "REFERENCES %(to_table)s (%(to_column)s) DEFERRABLE INITIALLY DEFERRED"
-    sql_create_unique = "CREATE UNIQUE INDEX %(name)s ON %(table)s (%(columns)s)"
+    sql_create_inline_fk = "REFERENCES %(to_table)s (%(to_column)s) " \
+                           "DEFERRABLE INITIALLY DEFERRED"
+    sql_create_unique = "CREATE UNIQUE INDEX %(name)s ON %(table)s (%(" \
+                        "columns)s)"
     sql_delete_unique = 'DROP INDEX %(name)s ON %(table)s'
 
     def quote_value(self, value):
@@ -136,7 +149,8 @@ class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):
                 if delete_field.name not in index.fields
             ]
 
-        constraints = list(model._meta.constraints)
+        if use_unique_constraints:
+            constraints = list(model._meta.constraints)
 
         # Provide isolated instances of the fields to the new model body so
         # that the existing model's internals aren't interfered with when
@@ -154,9 +168,11 @@ class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):
             'unique_together': unique_together,
             'index_together': index_together,
             'indexes': indexes,
-            'constraints': constraints,
             'apps': apps,
         }
+        if use_unique_constraints:
+            meta_contents['constraints'] = constraints
+
         meta = type("Meta", (), meta_contents)
         body_copy['Meta'] = meta
         body_copy['__module__'] = model.__module__
@@ -167,17 +183,21 @@ class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):
         suffix = ''.join(choice(ascii_lowercase) for _ in range(6))
         meta_contents = {
             'app_label': model._meta.app_label,
-            'db_table': 'new__%s__%s' % (suffix, strip_quotes(model._meta.db_table)),
+            'db_table': 'new__%s__%s' % (
+            suffix, strip_quotes(model._meta.db_table)),
             'unique_together': unique_together,
             'index_together': index_together,
             'indexes': indexes,
-            'constraints': constraints,
             'apps': apps,
         }
+        if use_unique_constraints:
+            meta_contents['constraints'] = constraints
+
         meta = type("Meta", (), meta_contents)
         body_copy['Meta'] = meta
         body_copy['__module__'] = model.__module__
-        new_model = type('New%s' % model._meta.object_name, model.__bases__, body_copy)
+        new_model = type('New%s' % model._meta.object_name, model.__bases__,
+                         body_copy)
 
         # Create a new table with the updated schema.
         self.create_model(new_model)
@@ -218,9 +238,11 @@ class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):
                 "table": self.quote_name(model._meta.db_table),
             })
             # Remove all deferred statements referencing the deleted table.
-            for sql in list(self.deferred_sql):
-                if isinstance(sql, Statement) and sql.references_table(model._meta.db_table):
-                    self.deferred_sql.remove(sql)
+            if use_ddl_references_statement:
+                for sql in list(self.deferred_sql):
+                    if isinstance(sql, Statement) and \
+                            sql.references_table(model._meta.db_table):
+                        self.deferred_sql.remove(sql)
 
     def add_field(self, model, field):
         """
@@ -304,18 +326,6 @@ class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):
         # Delete the old through table
         self.delete_model(old_field.remote_field.through)
 
-    def add_constraint(self, model, constraint):
-        if isinstance(constraint, UniqueConstraint) and constraint.condition:
-            super().add_constraint(model, constraint)
-        else:
-            self._remake_table(model)
-
-    def remove_constraint(self, model, constraint):
-        if isinstance(constraint, UniqueConstraint) and constraint.condition:
-            super().remove_constraint(model, constraint)
-        else:
-            self._remake_table(model)
-
     def drop_referenced_fk(self, model):
         sql = """
             SELECT constraint_name, referencing FROM 
@@ -333,38 +343,25 @@ class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):
         with self.connection.cursor() as cursor:
             cursor.execute(sql)
             for constraint, table in cursor.rows:
-                cursor.execute('ALTER TABLE "%s" DROP CONSTRAINT "%s"' % (table, constraint))
+                cursor.execute('ALTER TABLE "%s" DROP CONSTRAINT "%s"' % (
+                    table, constraint))
 
 
-"""
-The code has taken from django/db/backends/sqlite3/schema.py and slightly
-reworked for Tarantool compatibility
+if use_unique_constraints:
+    class DatabaseSchemaEditor(AbstractDatabaseSchemaEditor):
+        pass
+else:
+    class DatabaseSchemaEditor(AbstractDatabaseSchemaEditor):
+        def add_constraint(self, model, constraint):
+            if isinstance(constraint,
+                          UniqueConstraint) and constraint.condition:
+                super().add_constraint(model, constraint)
+            else:
+                self._remake_table(model)
 
-Copyright (c) Django Software Foundation and individual contributors.
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-    1. Redistributions of source code must retain the above copyright notice,
-       this list of conditions and the following disclaimer.
-
-    2. Redistributions in binary form must reproduce the above copyright
-       notice, this list of conditions and the following disclaimer in the
-       documentation and/or other materials provided with the distribution.
-
-    3. Neither the name of Django nor the names of its contributors may be used
-       to endorse or promote products derived from this software without
-       specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-"""
+        def remove_constraint(self, model, constraint):
+            if isinstance(constraint,
+                          UniqueConstraint) and constraint.condition:
+                super().remove_constraint(model, constraint)
+            else:
+                self._remake_table(model)
