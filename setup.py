@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="django-tarantool",
-    version="0.0.19",
+    version="0.0.20",
     package_dir={"django-tarantool": os.path.join("django_tarantool")},
     author="Artem Morozov",
     author_email="artembo@me.com",

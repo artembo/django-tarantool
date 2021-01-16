@@ -23,7 +23,6 @@ except ImportError:
 
 class AbstractDatabaseSchemaEditor(BaseDatabaseSchemaEditor):
     sql_delete_table = "DROP TABLE %(table)s"
-    sql_create_fk = None
     sql_create_inline_fk = "REFERENCES %(to_table)s (%(to_column)s) " \
                            "DEFERRABLE INITIALLY DEFERRED"
     sql_create_unique = "CREATE UNIQUE INDEX %(name)s ON %(table)s (%(" \
@@ -220,8 +219,9 @@ class AbstractDatabaseSchemaEditor(BaseDatabaseSchemaEditor):
         )
 
         # Run deferred SQL on correct table
-        for sql in self.deferred_sql:
-            self.execute(sql)
+        if use_ddl_references_statement:
+            for sql in self.deferred_sql:
+                self.execute(sql)
         self.deferred_sql = []
         # Fix any PK-removed field
         if restore_pk_field:

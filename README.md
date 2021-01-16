@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.com/artembo/django-tarantool.svg?branch=master)](https://travis-ci.com/artembo/django-tarantool)
 [![Build Status](https://img.shields.io/pypi/v/django-tarantool.svg?color=blue)](https://pypi.org/project/django-tarantool/)
 
-![PyPI - Django Version](https://img.shields.io/pypi/djversions/django-tarantool?color=blue&label=%20&logo=django)
+[![PyPI - Django Version](https://img.shields.io/pypi/djversions/django-tarantool?color=blue&label=%20&logo=django)](https://www.djangoproject.com/)
 
 ## Installation
 
