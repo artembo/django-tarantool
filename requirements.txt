@@ -1,4 +1,4 @@
-Django>=3.0.0,<3.1
+Django>=3.1.8<3.2
 tarantool>=0.7.1
 msgpack==1.0.2
 model-bakery==1.1.0
