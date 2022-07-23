@@ -1,14 +1,14 @@
 language: python
 
 python:
-  - '3.6'
+  - '3.9'
 
 install:
-  - curl -L https://tarantool.io/installer.sh | VER=2.3 sudo -E bash
+  - curl -L https://tarantool.io/release/2/installer.sh | bash
   - pip install -r requirements.txt
 
 script:
-  - cd django_app && python3 manage.py test && cd ..
+  - (cd django_app; python3 manage.py test)
 
 deploy:
   provider: pypi
